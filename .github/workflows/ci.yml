@@ -1,4 +1,4 @@
-name: CI
+name: Continuos Integration with Gradle
 
 on:
   workflow_call:

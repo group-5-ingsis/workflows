@@ -1,4 +1,4 @@
-name: CD
+name: Push Images/Containers to GHCR
 
 on:
   workflow_call:
