@@ -8,6 +8,14 @@ on:
       - completed
   workflow_dispatch:
     inputs:
+      image:
+        description: 'Docker image to rebuild'
+        required: true
+        default: 'snippets-app'
+      environment:
+        description: 'Deployment environment (prod or dev)'
+        required: true
+        default: 'dev'
 
 
 jobs:
@@ -34,9 +42,11 @@ jobs:
         run: |
           ssh ${{ secrets.AZURE_DEV_USER }}@${{ secrets.AZURE_DEV_HOST }} << 'EOF'
             cd snippets-infra/
-            docker compose pull
-            docker-compose -f docker-compose.dev.yml down && docker-compose -f docker-compose.dev.yml up -d
-            # git pull origin main
-            # Add any additional deployment commands here, e.g.,
-            # or systemctl restart your-service
+            docker compose pull ${{ github.event.inputs.image }}
+            #docker-compose -f docker-compose.dev.yml down && docker-compose -f docker-compose.dev.yml up -d
+            if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
+              docker-compose -f docker-compose.prod.yml down && docker-compose -f docker-compose.prod.yml up -d
+            else
+              docker-compose -f docker-compose.dev.yml down && docker-compose -f docker-compose.dev.yml up -d
+            fi
           EOF
