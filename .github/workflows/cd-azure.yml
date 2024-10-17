@@ -9,13 +9,13 @@ on:
   workflow_dispatch:
     inputs:
       image:
-        description: 'Docker image to rebuild'
+        type: string
         required: true
-        default: 'snippets-app'
       environment:
-        description: 'Deployment environment (prod or dev)'
+        type: string
         required: true
-        default: 'dev'
+
+
 
 
 jobs:
@@ -25,6 +25,10 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
+
+      - name: Use passed image value
+        run:
+          echo "Using image: ${{ inputs.image }}"
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.5.4
@@ -36,8 +40,6 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.AZURE_DEV_HOST }} >> ~/.ssh/known_hosts
 
-      # TODO: pass a parameter to know which branch to run CD on.
-      # TODO: check out 'workflow_dispatch' and 'repository_dispatch'
       - name: SSH and Deploy
         run: |
           ssh ${{ secrets.AZURE_DEV_USER }}@${{ secrets.AZURE_DEV_HOST }} << 'EOF'
