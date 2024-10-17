@@ -10,7 +10,6 @@ on:
         type: string
         required: true
 
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -20,8 +19,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Use passed image value
-        run:
-          echo "Using image: ${{ inputs.image }}"
+        run: echo "Using image: ${{ inputs.image }}"
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.5.4
@@ -37,9 +35,8 @@ jobs:
         run: |
           ssh ${{ secrets.AZURE_DEV_USER }}@${{ secrets.AZURE_DEV_HOST }} << 'EOF'
             cd snippets-infra/
-            docker compose pull ${{ github.event.inputs.image }}
-            #docker-compose -f docker-compose.dev.yml down && docker-compose -f docker-compose.dev.yml up -d
-            if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
+            docker compose pull ${{ inputs.image }}
+            if [ "${{ inputs.environment }}" = "prod" ]; then
               docker-compose -f docker-compose.prod.yml down && docker-compose -f docker-compose.prod.yml up -d
             else
               docker-compose -f docker-compose.dev.yml down && docker-compose -f docker-compose.dev.yml up -d
