@@ -2,6 +2,15 @@ name: Push Images/Containers to GHCR
 
 on:
   workflow_call:
+    inputs:
+      image:
+        description: 'Name of the Docker image'
+        required: true
+        type: string
+      environment:
+        description: 'Deployment environment (e.g. dev, prod)'
+        required: true
+        type: string
 
 permissions:
   contents: read

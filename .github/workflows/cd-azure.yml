@@ -1,14 +1,10 @@
 name: Log In to Azure and Redeploy
 
 on:
-  workflow_call:
-    inputs:
-      image:
-        type: string
-        required: true
-      environment:
-        type: string
-        required: true
+  workflow_run:
+    workflows: ["Push Images/Containers to GHCR"]
+    types:
+      - completed
 
 jobs:
   deploy:
