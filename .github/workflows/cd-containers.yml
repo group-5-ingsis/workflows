@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       environment:
-        description: 'Deployment environment (e.g. dev, prod)'
+        description: 'Deployment environment (main o dev)'
         required: true
         type: string
 
@@ -48,3 +48,26 @@ jobs:
           build-args: |
             USERNAME=${{ github.actor }}
             TOKEN=${{ github.token }}
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.AZURE_DEV_KEY }}
+
+      - name: Add VM to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.AZURE_DEV_HOST }} >> ~/.ssh/known_hosts
+
+      - name: SSH and Deploy
+        run: |
+          ssh ${{ secrets.AZURE_DEV_USER }}@${{ secrets.AZURE_DEV_HOST }} << 'EOF'
+            cd snippets-infra/
+           if [ "${{ inputs.environment }}" = "main" ]; then
+            docker compose pull ghcr.io/group-5-ingsis/${{ inputs.image }}:latest
+            docker compose up -d --no-deps ${{ inputs.image }}-app
+            else
+               docker compose pull ghcr.io/group-5-ingsis/${{ inputs.image }}:latest-dev
+                docker compose up -d --no-deps ${{ inputs.image }}-app
+            fi
+          EOF
