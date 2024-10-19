@@ -42,7 +42,7 @@ jobs:
 
       - name: Check Secret Presence
         run: |
-          if [ -z "${{ secrets.AZURE_DEV_KEY }}" ]; then
+          if [ -z "${{ secrets.test }}" ]; then
             echo "AZURE_DEV_KEY is not set!"
             exit 1
           else
