@@ -64,13 +64,31 @@ jobs:
       - name: SSH and Deploy
         run: |
           ssh ${{ secrets.AZURE_DEV_USER }}@${{ secrets.AZURE_DEV_HOST }} << 'EOF'
-            cd snippets-infra/
-
+            set -x  # Enable debug mode
+            echo "Connecting to the server..."
+          
+            # Change to the directory
+            cd snippets-infra/ || { echo "Failed to change directory"; exit 1; }
+            echo "Current directory: $(pwd)"
+          
+            # Log the branch being deployed
+            echo "Deploying branch: ${GITHUB_REF}"
+          
             if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+              echo "Pulling the latest image for production..."
               docker compose pull ghcr.io/${{ env.REPO }}:latest
+              echo "Starting the production application..."
               docker compose up -d --no-deps ${{ env.REPO }}-app
             elif [ "${GITHUB_REF}" = "refs/heads/dev" ]; then
+              echo "Pulling the latest image for development..."
               docker compose pull ghcr.io/${{ env.REPO }}:latest-dev
+              echo "Starting the development application..."
               docker compose up -d --no-deps ${{ env.REPO }}-app
+            else
+              echo "No valid branch detected for deployment."
+              exit 1
             fi
+          
+            echo "Deployment completed."
           EOF
+     
