@@ -66,9 +66,9 @@ jobs:
 
             if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
               docker compose pull ghcr.io/${{ env.REPO }}:latest
-              docker compose up -d --no-deps ${{ GITHUB_REPOSITORY }}-app
+              docker compose up -d --no-deps ${{ env.REPO }}-app
             elif [ "${GITHUB_REF}" = "refs/heads/dev" ]; then
               docker compose pull ghcr.io/${{ env.REPO }}:latest-dev
-              docker compose up -d --no-deps ${{ GITHUB_REPOSITORY }}-app
+              docker compose up -d --no-deps ${{ env.REPO }}-app
             fi
           EOF
