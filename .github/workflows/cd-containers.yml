@@ -12,6 +12,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      -
+      - name: Check Secret Presence
+        run: |
+          if [ -z "${{ secrets.TEST }}" ]; then
+            echo "AZURE_DEV_KEY is not set!"
+            exit 1
+          else
+            echo "AZURE_DEV_KEY is available!"
+          fi
+          
       - uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
@@ -40,14 +50,7 @@ jobs:
             USERNAME=${{ github.actor }}
             TOKEN=${{ github.token }}
 
-      - name: Check Secret Presence
-        run: |
-          if [ -z "${{ secrets.test }}" ]; then
-            echo "AZURE_DEV_KEY is not set!"
-            exit 1
-          else
-            echo "AZURE_DEV_KEY is available!"
-          fi
+
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.5.4
