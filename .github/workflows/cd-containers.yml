@@ -70,10 +70,10 @@ jobs:
           
             cd snippets-infra/ || { echo "Failed to change directory"; exit 1; }
           
-            if [ "\${GITHUB_REF}" = "refs/heads/main" ]; then
+            if [ ${{github.ref == 'refs/heads/main'}} ]; then
               docker compose pull ghcr.io/${{ env.REPO }}:latest
               docker compose -f docker-compose.prod.yml up -d --no-deps ${REPO_NAME}-app
-            elif [ "\${GITHUB_REF}" = "refs/heads/dev" ]; then
+            elif [ ${{github.ref == 'refs/heads/dev'}} ]; then
               docker compose pull ghcr.io/${{ env.REPO }}:latest-dev
               docker compose -f docker-compose.dev.yml up -d --no-deps ${REPO_NAME}-app
             else
