@@ -49,6 +49,15 @@ jobs:
             USERNAME=${{ github.actor }}
             TOKEN=${{ github.token }}
 
+      - name: Check Secret Presence
+        run: |
+          if [ -z "${{ secrets.AZURE_DEV_KEY }}" ]; then
+            echo "AZURE_DEV_KEY is not set!"
+            exit 1
+          else
+            echo "AZURE_DEV_KEY is available!"
+          fi
+
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.5.4
         with:
