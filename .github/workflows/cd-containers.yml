@@ -2,6 +2,13 @@ name: Push Images/Containers to GHCR
 
 on:
   workflow_call:
+    secrets:
+      AZURE_DEV_KEY:
+        required: true
+      AZURE_DEV_USER:
+        required: true
+      AZURE_DEV_HOST:
+        required: true
 
 permissions:
   contents: read
