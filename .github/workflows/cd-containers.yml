@@ -63,7 +63,7 @@ jobs:
 
       - name: SSH and Deploy
         run: |
-          REPO_NAME=$(basename ${{ github.repository }})
+          REPO_NAME=$(basename ${{ env.REPO }})
           
           ssh ${{ secrets.AZURE_DEV_USER }}@${{ secrets.AZURE_DEV_HOST }} << EOF
             set -x  # Enable debug mode
