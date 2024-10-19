@@ -74,6 +74,8 @@ jobs:
             # Log the branch being deployed
             echo "Deploying branch: ${{github.ref}}"
           
+            REPO_NAME=$(basename ${{ github.repository }})
+          
             if [ ${{ github.ref == 'refs/heads/main'}} ]; then
               echo "Pulling the latest image for production..."
               docker compose pull ghcr.io/${{ env.REPO }}:latest
