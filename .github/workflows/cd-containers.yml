@@ -63,34 +63,24 @@ jobs:
 
       - name: SSH and Deploy
         run: |
-          ssh ${{ secrets.AZURE_DEV_USER }}@${{ secrets.AZURE_DEV_HOST }} << 'EOF'
+          REPO_NAME=$(basename ${{ github.repository }})
+          
+          ssh ${{ secrets.AZURE_DEV_USER }}@${{ secrets.AZURE_DEV_HOST }} << EOF
             set -x  # Enable debug mode
-            echo "Connecting to the server..."
           
-            # Change to the directory
             cd snippets-infra/ || { echo "Failed to change directory"; exit 1; }
-            echo "Current directory: $(pwd)"
           
-            # Log the branch being deployed
-            echo "Deploying branch: ${{github.ref}}"
-          
-            REPO_NAME=$(basename ${{ github.repository }})
-          
-            if [ ${{ github.ref == 'refs/heads/main'}} ]; then
-              echo "Pulling the latest image for production..."
+            if [ "\${GITHUB_REF}" = "refs/heads/main" ]; then
               docker compose pull ghcr.io/${{ env.REPO }}:latest
-              echo "Starting the production application..."
-              docker compose -f docker-compose.prod.yml up -d --no-deps ${{ env.REPO }}-app
-            elif [ ${{ github.ref == 'refs/heads/dev'}} ]; then
-              echo "Pulling the latest image for development..."
+              docker compose -f docker-compose.prod.yml up -d --no-deps ${REPO_NAME}-app
+            elif [ "\${GITHUB_REF}" = "refs/heads/dev" ]; then
               docker compose pull ghcr.io/${{ env.REPO }}:latest-dev
-              echo "Starting the development application..."
-              docker compose -f docker-compose.dev.yml up -d --no-deps ${{ env.REPO }}-app
+              docker compose -f docker-compose.dev.yml up -d --no-deps ${REPO_NAME}-app
             else
-              echo "No valid branch detected for deployment."
               exit 1
             fi
           
             echo "Deployment completed."
           EOF
+    
      
