@@ -53,6 +53,9 @@ jobs:
 
 
       - name: Setup SSH
+        run:
+          echo "${{ secrets.AZURE_DEV_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.AZURE_DEV_KEY }}
