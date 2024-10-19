@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      
+
       - name: Check Secret Presence
         run: |
-          if [ -z "${{ secrets.TEST }}" ]; then
+          if [ -z "${{ secrets.AZURE_DEV_KEY }}" ]; then
             echo "AZURE_DEV_KEY is not set!"
             exit 1
           else
