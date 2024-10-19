@@ -28,8 +28,8 @@ jobs:
         run: |
           ssh ${{ secrets.AZURE_DEV_USER }}@${{ secrets.AZURE_DEV_HOST }} << 'EOF'
             cd snippets-infra/
-            docker compose pull ${{ inputs.image }}
-            if [ "${{ inputs.environment }}" = "prod" ]; then
+            docker compose pull ghcr.io/${{ github.repository }}:${{ github.sha }}
+            if [ "${{ github.ref_name }}" = "main" ]; then
               docker-compose -f docker-compose.prod.yml down && docker-compose -f docker-compose.prod.yml up -d
             else
               docker-compose -f docker-compose.dev.yml down && docker-compose -f docker-compose.dev.yml up -d
