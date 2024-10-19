@@ -21,6 +21,9 @@ jobs:
 
     steps:
 
+      - name: Debug Secrets
+        run: echo "${{ toJSON(secrets) }}"
+
       - name: Check Secret Presence
         run: |
           if [ -z "${{ secrets.AZURE_DEV_KEY }}" ]; then
