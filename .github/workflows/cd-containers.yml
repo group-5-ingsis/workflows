@@ -81,7 +81,7 @@ jobs:
           ssh $SSH_USER@$SSH_HOST << EOF
             set -e  # Stop execution on any error
 
-            cd snippets-infra/
+            cd snippets-infra
 
             # Stop the app before pulling the new image
             docker stop ${REPO_NAME}-app
