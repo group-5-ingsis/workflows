@@ -9,6 +9,12 @@ on:
         required: true
       AZURE_DEV_HOST:
         required: true
+      AZURE_MAIN_KEY:
+        required: true
+      AZURE_MAIN_USER:
+        required: true
+      AZURE_MAIN_HOST:
+        required: true
 
 permissions:
   contents: read
@@ -53,22 +59,22 @@ jobs:
             TOKEN=${{ github.token }}
 
 
-
-      - name: Setup SSH
+      - name: Setup SSH Key
         uses: webfactory/ssh-agent@v0.5.4
         with:
-          ssh-private-key: ${{ secrets.AZURE_DEV_KEY }}
+          ssh-private-key: ${{ github.ref == 'refs/heads/main' && secrets.AZURE_MAIN_KEY || secrets.AZURE_DEV_KEY }}
 
       - name: Add VM to known_hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.AZURE_DEV_HOST }} >> ~/.ssh/known_hosts
+          SSH_HOST=${{ github.ref == 'refs/heads/main' && secrets.AZURE_MAIN_HOST || secrets.AZURE_DEV_HOST }}
+          ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
 
       - name: SSH and Deploy
         run: |
           REPO_NAME=$(basename ${{ env.REPO }})
-          SSH_USER=${{ github.ref == 'refs/heads/main' && secrets.AZURE_PROD_USER || secrets.AZURE_DEV_USER }}
-          SSH_HOST=${{ github.ref == 'refs/heads/main' && secrets.AZURE_PROD_HOST || secrets.AZURE_DEV_HOST }}
+          SSH_USER=${{ github.ref == 'refs/heads/main' && secrets.AZURE_MAIN_USER || secrets.AZURE_DEV_USER }}
+          SSH_HOST=${{ github.ref == 'refs/heads/main' && secrets.AZURE_MAIN_HOST || secrets.AZURE_DEV_HOST }}
           IMAGE_TAG=${{ github.ref == 'refs/heads/main' && 'latest' || 'latest-dev' }}
           COMPOSE_FILE=${{ github.ref == 'refs/heads/main' && 'docker-compose.prod.yml' || 'docker-compose.dev.yml' }}
 
@@ -86,4 +92,3 @@ jobs:
 
             echo "Deployment completed for $REPO_NAME on $SSH_HOST with tag $IMAGE_TAG."
           EOF
-      
