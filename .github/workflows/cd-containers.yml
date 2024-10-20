@@ -67,23 +67,23 @@ jobs:
       - name: SSH and Deploy
         run: |
           REPO_NAME=$(basename ${{ env.REPO }})
-          
-          ssh ${{ secrets.AZURE_DEV_USER }}@${{ secrets.AZURE_DEV_HOST }} << EOF
-            set -x  # Enable debug mode
-          
-            cd snippets-infra/ || { echo "Failed to change directory"; exit 1; }
-          
-            if [ ${{github.ref == 'refs/heads/main'}} ]; then
-              docker pull ghcr.io/${{ env.REPO }}:latest
-              docker compose -f docker-compose.prod.yml up -d --no-deps ${REPO_NAME}-app
-            elif [ ${{github.ref == 'refs/heads/dev'}} ]; then
-              docker pull ghcr.io/${{ env.REPO }}:latest-dev
-              docker compose -f docker-compose.dev.yml up -d --no-deps ${REPO_NAME}-app
-            else
-              exit 1
-            fi
-          
-            echo "Deployment completed."
+          SSH_USER=${{ github.ref == 'refs/heads/main' && secrets.AZURE_PROD_USER || secrets.AZURE_DEV_USER }}
+          SSH_HOST=${{ github.ref == 'refs/heads/main' && secrets.AZURE_PROD_HOST || secrets.AZURE_DEV_HOST }}
+          IMAGE_TAG=${{ github.ref == 'refs/heads/main' && 'latest' || 'latest-dev' }}
+          COMPOSE_FILE=${{ github.ref == 'refs/heads/main' && 'docker-compose.prod.yml' || 'docker-compose.dev.yml' }}
+
+          ssh $SSH_USER@$SSH_HOST << EOF
+            set -e  # Stop execution on any error
+
+            cd snippets-infra/
+
+            # Stop the app before pulling the new image
+            docker stop ${REPO_NAME}-app
+
+            # Pull the new image and update the container
+            docker pull ghcr.io/${{ env.REPO }}:$IMAGE_TAG
+            docker compose -f $COMPOSE_FILE up -d --no-deps ${REPO_NAME}-app
+
+            echo "Deployment completed for $REPO_NAME on $SSH_HOST with tag $IMAGE_TAG."
           EOF
-    
-     
+      
