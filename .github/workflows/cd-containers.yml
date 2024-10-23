@@ -58,7 +58,7 @@ jobs:
           ssh-private-key: ${{ secrets.AZURE_KEY }}
 
       - name: Lowercase the repo name
-        run: echo "repo=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+        run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
 
       - name: Add VM to known_hosts
         run: |
@@ -68,7 +68,7 @@ jobs:
 
       - name: SSH and Deploy
         run: |
-          REPO_NAME=$(basename ${{ env.repo }})
+          REPO_NAME=$(basename ${{ env.REPO }})
           SSH_USER=${{ secrets.AZURE_USER }}
           SSH_HOST=${{ secrets.AZURE_HOST }}
           IMAGE_TAG=${{ github.environment == 'production' && 'latest' || 'latest-dev' }}
