@@ -3,17 +3,11 @@ name: Push Images/Containers to GHCR
 on:
   workflow_call:
     secrets:
-      AZURE_DEV_KEY:
+      AZURE_KEY:
         required: true
-      AZURE_DEV_USER:
+      AZURE_USER:
         required: true
-      AZURE_DEV_HOST:
-        required: true
-      AZURE_MAIN_KEY:
-        required: true
-      AZURE_MAIN_USER:
-        required: true
-      AZURE_MAIN_HOST:
+      AZURE_HOST:
         required: true
 
 permissions:
@@ -39,11 +33,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Lowercase the repo name and username
+      - name: Lowercase the repository name
         run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
 
       - name: Build and push container image to registry
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         env:
           USERNAME: ${{ github.actor }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -54,39 +48,33 @@ jobs:
             ${{ github.ref == 'refs/heads/dev' && format('ghcr.io/{0}:latest-dev', env.REPO) || '' }}
             ghcr.io/${{ env.REPO }}:${{ github.sha }}
           file: ./Dockerfile
-          build-args: |
-            USERNAME=${{ github.actor }}
-            TOKEN=${{ github.token }}
-
 
       - name: Setup SSH Key
         uses: webfactory/ssh-agent@v0.5.4
         with:
-          ssh-private-key: ${{ github.ref == 'refs/heads/main' && secrets.AZURE_MAIN_KEY || secrets.AZURE_DEV_KEY }}
+          ssh-private-key: ${{ secrets.AZURE_KEY }}
 
       - name: Add VM to known_hosts
         run: |
           mkdir -p ~/.ssh
-          SSH_HOST=${{ github.ref == 'refs/heads/main' && secrets.AZURE_MAIN_HOST || secrets.AZURE_DEV_HOST }}
+          SSH_HOST=${{ secrets.AZURE_HOST}}
           ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
 
       - name: SSH and Deploy
         run: |
           REPO_NAME=$(basename ${{ env.REPO }})
-          SSH_USER=${{ github.ref == 'refs/heads/main' && secrets.AZURE_MAIN_USER || secrets.AZURE_DEV_USER }}
-          SSH_HOST=${{ github.ref == 'refs/heads/main' && secrets.AZURE_MAIN_HOST || secrets.AZURE_DEV_HOST }}
-          IMAGE_TAG=${{ github.ref == 'refs/heads/main' && 'latest' || 'latest-dev' }}
-          COMPOSE_FILE=${{ github.ref == 'refs/heads/main' && 'docker-compose.prod.yml' || 'docker-compose.dev.yml' }}
+          SSH_USER=${{ secrets.AZURE_USER }}
+          SSH_HOST=${{ secrets.AZURE_HOST}}
+          IMAGE_TAG=${{ github.environment == 'production' && 'latest' || 'latest-dev' }}
+          COMPOSE_FILE=${{ github.environment == 'production' && 'docker-compose.prod.yml' || 'docker-compose.dev.yml' }}
 
           ssh $SSH_USER@$SSH_HOST << EOF
-            set -e  # Stop execution on any error
+            set -e
 
             cd snippets-infra
 
-            # Stop the app before pulling the new image
             docker stop ${REPO_NAME}-app
 
-            # Pull the new image and update the container
             docker pull ghcr.io/${{ env.REPO }}:$IMAGE_TAG
             docker compose -f $COMPOSE_FILE up -d --no-deps ${REPO_NAME}-app
 
