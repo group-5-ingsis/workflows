@@ -14,7 +14,6 @@ permissions:
   contents: read
   packages: write
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,7 +21,6 @@ jobs:
       repo: ${{ steps.lowercase_repo.outputs.repo }}
 
     steps:
-
       - uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
@@ -37,7 +35,7 @@ jobs:
 
       - name: Lowercase the repo name and username
         id: lowercase_repo
-        run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
+        run: echo "repo=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
 
       - name: Build and push container image to registry
         uses: docker/build-push-action@v6
@@ -47,9 +45,9 @@ jobs:
         with:
           push: true
           tags: |
-            ${{ github.ref == 'refs/heads/main' && format('ghcr.io/{0}:latest', env.REPO) || '' }}
-            ${{ github.ref == 'refs/heads/dev' && format('ghcr.io/{0}:latest-dev', env.REPO) || '' }}
-            ghcr.io/${{ env.REPO }}:${{ github.sha }}
+            ${{ github.ref == 'refs/heads/main' && format('ghcr.io/{0}:latest', env.repo) || '' }}
+            ${{ github.ref == 'refs/heads/dev' && format('ghcr.io/{0}:latest-dev', env.repo) || '' }}
+            ghcr.io/${{ env.repo }}:${{ github.sha }}
           file: ./Dockerfile
 
   deploy:
@@ -83,8 +81,7 @@ jobs:
 
             docker stop ${REPO_NAME}-app || true 
 
-            docker pull ghcr.io/${{ env.REPO }}:$IMAGE_TAG
+            docker pull ghcr.io/${{ env.repo }}:$IMAGE_TAG
             docker-compose -f $COMPOSE_FILE up -d --no-deps ${REPO_NAME}-app
 
-            echo "Deployment completed for $REPO_NAME on $SSH_HOST with tag $IMAGE_TAG."
           EOF
