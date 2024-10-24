@@ -50,7 +50,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
     steps:
       - name: Setup SSH Key
         uses: webfactory/ssh-agent@v0.5.4
@@ -59,6 +58,9 @@ jobs:
 
       - name: Lowercase the repo name
         run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
+
+      - name: Set deploy environment
+        run: echo "ENVIRONMENT=${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}" >> $GITHUB_ENV
 
       - name: Add VM to known_hosts
         run: |
@@ -71,8 +73,8 @@ jobs:
           REPO_NAME=$(basename $REPO)
           SSH_USER=${{ secrets.AZURE_USER }}
           SSH_HOST=${{ secrets.AZURE_HOST }}
-          IMAGE_TAG=${{ github.environment == 'production' && 'latest' || 'latest-dev' }}
-          COMPOSE_FILE=${{ github.environment == 'production' && 'docker-compose.prod.yml' || 'docker-compose.dev.yml' }}
+          IMAGE_TAG=${{ env.ENVIRONMENT == 'production' && 'latest' || 'latest-dev' }}
+          COMPOSE_FILE=${{ env.ENVIRONMENT == 'production' && 'docker-compose.prod.yml' || 'docker-compose.dev.yml' }}
 
           ssh $SSH_USER@$SSH_HOST << EOF
             set -e
@@ -80,7 +82,7 @@ jobs:
             cd snippets-infra
 
             docker stop snippets-infra-${REPO_NAME}-app-1 || true 
-            docker pull ghcr.io/${{ env.repo }}:${IMAGE_TAG}
+            docker pull ghcr.io/${{ env.REPO }}:${IMAGE_TAG}
             docker-compose -f $COMPOSE_FILE up -d --no-deps ${REPO_NAME}-app
 
           EOF
