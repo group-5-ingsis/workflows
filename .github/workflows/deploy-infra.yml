@@ -12,10 +12,13 @@ on:
 
 permissions:
   contents: read
+  packages: write
+ 
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
     steps:
 
       - name: Setup SSH Key
