@@ -9,8 +9,6 @@ on:
         required: true
       AZURE_HOST:
         required: true
-      COMPOSE:
-        required: true
 
 permissions:
   contents: read
@@ -35,13 +33,7 @@ jobs:
         run: |
           SSH_USER=${{ secrets.AZURE_USER }}
           SSH_HOST=${{ secrets.AZURE_HOST }}
-          
-          if [[ "${{ secrets.COMPOSE }}" == "production" ]]; then
-            COMPOSE_FILE="docker-compose.prod.yml"
-          else
-            COMPOSE_FILE="docker-compose.dev.yml"
-          fi
-          
+          COMPOSE_FILE=${{ github.ref == 'main' && 'docker-compose.prod.yml' || 'docker-compose.dev.yml' }}
           
           ssh $SSH_USER@$SSH_HOST << EOF
             set -e
