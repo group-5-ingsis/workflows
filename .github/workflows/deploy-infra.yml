@@ -1,0 +1,51 @@
+name: Deploy all Services to VM
+
+on:
+  workflow_call:
+    secrets:
+      AZURE_KEY:
+        required: true
+      AZURE_USER:
+        required: true
+      AZURE_HOST:
+        required: true
+
+permissions:
+  contents: read
+
+deploy:
+  runs-on: ubuntu-latest
+  steps:
+
+    - name: Setup SSH Key
+      uses: webfactory/ssh-agent@v0.5.4
+      with:
+        ssh-private-key: ${{ secrets.AZURE_KEY }}
+
+    - name: Lowercase the repo name
+      run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
+
+    - name: Add VM to known_hosts
+      run: |
+        mkdir -p ~/.ssh
+        SSH_HOST=${{ secrets.AZURE_HOST }}
+        ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+
+    - name: SSH and Deploy
+      run: |
+        SSH_USER=${{ secrets.AZURE_USER }}
+        SSH_HOST=${{ secrets.AZURE_HOST }}
+        COMPOSE_FILE=${{ env.ENVIRONMENT == 'production' && 'docker-compose.prod.yml' || 'docker-compose.dev.yml' }}
+        
+        ssh $SSH_USER@$SSH_HOST << EOF
+          set -e
+        
+          cd snippets-infra || exit 1
+        
+          docker-compose down
+        
+          docker-compose pull
+        
+          docker-compose up -d
+        
+        EOF
