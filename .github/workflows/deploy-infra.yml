@@ -36,7 +36,7 @@ jobs:
         run: |
           SSH_USER=${{ secrets.AZURE_USER }}
           SSH_HOST=${{ secrets.AZURE_HOST }}
-          COMPOSE_FILE=${{ github.ref == 'main' && 'docker-compose.prod.yml' || 'docker-compose.dev.yml' }}
+          COMPOSE_FILE=${{ env.ENVIRONMENT == 'production' && 'docker-compose.prod.yml' || 'docker-compose.dev.yml' }}
           
           ssh $SSH_USER@$SSH_HOST << EOF
             set -e
