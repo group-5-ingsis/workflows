@@ -48,7 +48,8 @@ jobs:
             git checkout $BRANCH_NAME
             git pull origin $BRANCH_NAME
           
-            docker compose -f $COMPOSE_FILE down
+            docker compose -f $COMPOSE_FILE down --remove-orphans
+            docker network prune -f
           
             docker compose -f $COMPOSE_FILE pull
           
