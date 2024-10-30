@@ -37,11 +37,16 @@ jobs:
           SSH_USER=${{ secrets.AZURE_USER }}
           SSH_HOST=${{ secrets.AZURE_HOST }}
           COMPOSE_FILE=${{ env.ENVIRONMENT == 'production' && 'docker-compose.prod.yml' || 'docker-compose.dev.yml' }}
+          BRANCH_NAME=${{ env.ENVIRONMENT == 'production' && 'main' || 'dev' }}
           
           ssh $SSH_USER@$SSH_HOST << EOF
             set -e
           
             cd snippets-infra || exit 1
+          
+            git fetch origin
+            git checkout $BRANCH_NAME
+            git pull origin $BRANCH_NAME
           
             docker compose -f $COMPOSE_FILE down
           
