@@ -44,9 +44,6 @@ jobs:
 
       - name: Build and push container image to registry
         uses: docker/build-push-action@v6
-        env:
-          USERNAME: husseymarcos
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           push: true
           tags: |
@@ -54,6 +51,9 @@ jobs:
             ${{ github.ref == 'refs/heads/dev' && format('ghcr.io/{0}:latest-dev', env.repo) || '' }}
             ghcr.io/${{ env.repo }}:${{ github.sha }}
           file: ./Dockerfile
+        build-args: |
+          USERNAME=${{ github.actor }}
+          TOKEN=${{ secrets.GITHUB_TOKEN }}
 
   deploy:
     runs-on: ubuntu-latest
