@@ -45,7 +45,7 @@ jobs:
       - name: Build and push container image to registry
         uses: docker/build-push-action@v6
         env:
-          USERNAME: ${{ github.actor }}
+          USERNAME: husseymarcos
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           push: true
