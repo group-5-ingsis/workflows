@@ -92,6 +92,6 @@ jobs:
 
             docker stop snippets-infra-${REPO_NAME}-app-1 || true 
             docker pull ghcr.io/${{ env.REPO }}:${IMAGE_TAG}
-            docker compose -f $COMPOSE_FILE up -d --no-deps ${REPO_NAME}
+            docker compose -f $COMPOSE_FILE up -d --no-deps ${REPO_NAME}-app
 
           EOF
