@@ -43,6 +43,8 @@ jobs:
             ${{ github.ref == 'refs/heads/dev' && format('ghcr.io/{0}:latest-dev', env.repo) || '' }}
             ghcr.io/${{ env.repo }}:${{ github.sha }}
           file: ./Dockerfile
+          build-args: |
+            BUILD_ENV=${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
           secrets: |
             USERNAME=${{ github.actor }}
             TOKEN=${{ secrets.GITHUB_TOKEN }}
