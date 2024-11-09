@@ -34,14 +34,6 @@ jobs:
       - name: Lowercase the repo name
         run: echo "repo=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
 
-      - name: Set USERNAME and TOKEN environment variables
-        env:
-          USERNAME: ${{ github.actor }}
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "USERNAME=${USERNAME}"
-          echo "TOKEN is set: ${TOKEN:+yes}"  # To check if TOKEN is populated
-
       - name: Build and push container image to registry
         uses: docker/build-push-action@v6
         with:
