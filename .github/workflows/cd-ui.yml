@@ -9,6 +9,14 @@ on:
         required: true
       AZURE_HOST:
         required: true
+      VITE_AUTH0_DOMAIN:
+        required: true
+      VITE_AUTH0_CLIENT_ID:
+        required: true
+      VITE_AUTH0_AUDIENCE:
+        required: true
+
+
 
 permissions:
   contents: read
@@ -39,10 +47,6 @@ jobs:
           echo "VITE_AUTH0_DOMAIN=${{ secrets.VITE_AUTH0_DOMAIN }}"
           echo "VITE_AUTH0_CLIENT_ID=${{ secrets.VITE_AUTH0_CLIENT_ID }}"
           echo "VITE_AUTH0_AUDIENCE=${{ secrets.VITE_AUTH0_AUDIENCE }}"
-        env:
-          VITE_AUTH0_DOMAIN: ${{ secrets.VITE_AUTH0_DOMAIN }}
-          VITE_AUTH0_CLIENT_ID: ${{ secrets.VITE_AUTH0_CLIENT_ID }}
-          VITE_AUTH0_AUDIENCE: ${{ secrets.VITE_AUTH0_AUDIENCE }}
 
       - name: Build and push container image to registry
         uses: docker/build-push-action@v6
