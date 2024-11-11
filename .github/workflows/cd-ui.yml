@@ -42,12 +42,6 @@ jobs:
       - name: Lowercase the repo name
         run: echo "repo=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
 
-      - name: Debug Secrets
-        run: |
-          echo "VITE_AUTH0_DOMAIN=${{ secrets.VITE_AUTH0_DOMAIN }}"
-          echo "VITE_AUTH0_CLIENT_ID=${{ secrets.VITE_AUTH0_CLIENT_ID }}"
-          echo "VITE_AUTH0_AUDIENCE=${{ secrets.VITE_AUTH0_AUDIENCE }}"
-
       - name: Build and push container image to registry
         uses: docker/build-push-action@v6
         with:
@@ -87,7 +81,6 @@ jobs:
 
       - name: SSH and Deploy
         run: |
-          REPO_NAME=$(basename $REPO)
           SSH_USER=${{ secrets.AZURE_USER }}
           SSH_HOST=${{ secrets.AZURE_HOST }}
           IMAGE_TAG=${{ env.ENVIRONMENT == 'production' && 'latest' || 'latest-dev' }}
@@ -98,8 +91,8 @@ jobs:
 
             cd snippets-infra
 
-            docker stop ${REPO_NAME} || true 
+            docker stop printscript-ui || true 
             docker pull ghcr.io/${{ env.REPO }}:${IMAGE_TAG}
-            docker compose -f $COMPOSE_FILE up -d ${REPO_NAME}
+            docker compose -f $COMPOSE_FILE up -d printscript-ui
 
           EOF
