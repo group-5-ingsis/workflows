@@ -48,6 +48,9 @@ jobs:
             git checkout $BRANCH_NAME
             git pull origin $BRANCH_NAME
           
+            echo "Backing up Azurite volume..."
+            docker run --rm -v blob:/source -v /home/username/backups/azurite:/backup alpine cp -r /source /backup
+          
             docker compose -f $COMPOSE_FILE down --remove-orphans
             docker network prune -f
           
