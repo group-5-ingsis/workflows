@@ -13,7 +13,6 @@ on:
 permissions:
   contents: read
   packages: write
- 
 
 jobs:
   deploy:
@@ -32,18 +31,31 @@ jobs:
           SSH_HOST=${{ secrets.AZURE_HOST }}
           ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
 
+      - name: Debug Environment Variables
+        run: |
+          echo "Determining environment..."
+          echo "GitHub Ref: ${{ github.ref }}"
+          ENVIRONMENT=${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+          echo "Resolved Environment: $ENVIRONMENT"
+          COMPOSE_FILE=${{ github.ref == 'refs/heads/main' && 'docker-compose.prod.yml' || 'docker-compose.dev.yml' }}
+          BRANCH_NAME=${{ github.ref == 'refs/heads/main' && 'main' || 'dev' }}
+          echo "COMPOSE_FILE: $COMPOSE_FILE"
+          echo "BRANCH_NAME: $BRANCH_NAME"
+
       - name: SSH and Deploy
         run: |
           SSH_USER=${{ secrets.AZURE_USER }}
           SSH_HOST=${{ secrets.AZURE_HOST }}
-          COMPOSE_FILE=${{ env.ENVIRONMENT == 'production' && 'docker-compose.prod.yml' || 'docker-compose.dev.yml' }}
-          BRANCH_NAME=${{ env.ENVIRONMENT == 'production' && 'main' || 'dev' }}
-          
+          COMPOSE_FILE=${{ github.ref == 'refs/heads/main' && 'docker-compose.prod.yml' || 'docker-compose.dev.yml' }}
+          BRANCH_NAME=${{ github.ref == 'refs/heads/main' && 'main' || 'dev' }}
+
           ssh $SSH_USER@$SSH_HOST << EOF
             set -e
           
+            echo "Connecting to VM..."
             cd snippets-infra || exit 1
           
+            echo "Fetching and pulling latest changes..."
             git fetch origin
             git checkout $BRANCH_NAME
             git pull origin $BRANCH_NAME
@@ -51,13 +63,17 @@ jobs:
             echo "Backing up Azurite volume..."
             docker run --rm -v blob:/source -v /home/username/backups/azurite:/backup alpine cp -r /source /backup
           
+            echo "Stopping and cleaning up containers..."
             docker compose -f $COMPOSE_FILE down --remove-orphans
             docker network prune -f
           
+            echo "Pulling updated images..."
             docker compose -f $COMPOSE_FILE pull
           
-            docker image prune -a -f 
+            echo "Pruning old images..."
+            docker image prune -a -f
           
+            echo "Starting containers with updated configuration..."
             docker compose -f $COMPOSE_FILE up -d --force-recreate --always-recreate-deps
           
           EOF
