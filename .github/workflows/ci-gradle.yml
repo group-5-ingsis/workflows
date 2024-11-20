@@ -4,8 +4,12 @@ on:
   workflow_call:
       
 jobs:
-  build:
+  Continuous Integration:
     runs-on: ubuntu-latest
+
+    env:
+      USERNAME: ${{ github.actor }}
+      TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout code
