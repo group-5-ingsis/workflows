@@ -4,7 +4,7 @@ on:
   workflow_call:
       
 jobs:
-  Continuous Integration:
+  continuous-integration:
     runs-on: ubuntu-latest
 
     env:
