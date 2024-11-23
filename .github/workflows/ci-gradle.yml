@@ -22,11 +22,5 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Clean Gradle
-        run: ./gradlew clean
-
-      - name: Formatting/Linting
-        run: ./gradlew ktlintCheck
-
-      - name: Tests
-        run: ./gradlew koverVerify
+      - name: Build Gradle
+        run: ./gradlew build
