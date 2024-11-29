@@ -59,9 +59,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.AZURE_KEY }}
 
-      - name: Lowercase the repo name
-        run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
-
       - name: Set deploy environment
         run: echo "ENVIRONMENT=${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}" >> $GITHUB_ENV
 
@@ -84,8 +81,11 @@ jobs:
 
             cd snippets-infra
 
-            docker stop ${REPO_NAME} || true 
+            docker stop ${REPO_NAME} || true
             docker pull ghcr.io/${{ env.REPO }}:${IMAGE_TAG}
-            docker compose -f $COMPOSE_FILE up -d ${REPO_NAME}
+            docker compose -f $COMPOSE_FILE down --remove-orphans
+            docker network prune -f
+            docker image prune -a -f
+            docker compose -f $COMPOSE_FILE up -d --force-recreate --always-recreate-deps
 
           EOF
