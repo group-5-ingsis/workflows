@@ -86,9 +86,7 @@ jobs:
 
             docker stop ${REPO_NAME} || true
             docker pull ghcr.io/${{ env.REPO }}:${IMAGE_TAG}
-            docker compose -f $COMPOSE_FILE down --remove-orphans
-            docker network prune -f
-            docker image prune -a -f
-            docker compose -f $COMPOSE_FILE up -d --force-recreate --always-recreate-deps
+            docker compose -f $COMPOSE_FILE down ghcr.io/${{ env.REPO }}:${IMAGE_TAG} --remove-orphans
+            docker compose -f $COMPOSE_FILE up -d --force-recreate --always-recreate-deps ghcr.io/${{ env.REPO }}:${IMAGE_TAG}
 
           EOF
